@@ -19,8 +19,10 @@ def parse(base64_str):
     root_as_string = ET.tostring(root, encoding='utf8').decode('utf8')
     # print(root_as_string)
 
-    # Put XML into table so can read it
-    convert_to_table(root)
+    # extract payor / payee info to build entities
+    data, corporate_accounts = convert_to_table(root)
+
+    return data, corporate_accounts
 
 def convert_to_table(root):
     # data = {}
@@ -30,7 +32,7 @@ def convert_to_table(root):
     #     # data[child.tag] = child.text
 
     data = []
-    corporate_accounts = defaultdict(lambda: (0, 0))
+    corporate_accounts = defaultdict()
     for transaction in root.findall('row'):
 
         row = {}
@@ -47,6 +49,7 @@ def convert_to_table(root):
         # Payor rows
         if transaction[1][0].text not in corporate_accounts:
             corporate_accounts[transaction[1][0].text] = (int(transaction[1][1].text),int(transaction[1][2].text))
+
         row['Payor: Dunkin ID'] = transaction[1][0].text
         row['Payor: ABARouting'] = transaction[1][1].text
         row['Payor: Account Number'] = transaction[1][2].text
@@ -55,16 +58,11 @@ def convert_to_table(root):
         row['Payor: Address'] = transaction[1][6][0].text + ', ' + transaction[1][6][1].text + ', ' + transaction[1][6][2].text + ', ' + transaction[1][6][3].text
 
         row['Amount'] = transaction[3].text
-        # row['amount'] = transaction.find('amount').text
-        # row['date'] = transaction.find('date').text
         data.append(row)
-    
-    # print(data)
-    print(corporate_accounts)
 
     # convert data to viewable dataframe
     df = pd.DataFrame(data)
     sorted_df = df.sort_values(by=['E: Dunkin ID'])
     sorted_df.to_csv('method_data.csv', index=False)
-    print(sorted_df.head(40))
-    return data
+
+    return data, corporate_accounts
