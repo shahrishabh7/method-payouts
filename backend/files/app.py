@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import parser
+import methodfi
 # from flask_cors import CORS
 
 app = Flask(__name__)
@@ -8,9 +9,11 @@ app = Flask(__name__)
 @app.route("/process_xml", methods=["POST"])
 def process_xml():
     xml = request.json['xml']
-    # print(xml)
-    print(type(xml['xml']))
-    parser.parse(xml['xml'])
+    # parse XML and retrieve data to create entities
+    corporate_entity_information, payment_data, corporate_accounts = parser.parse(xml['xml'])
+
+    methodfi.main(corporate_entity_information,payment_data,corporate_accounts)
+
     # print / return response -> should be batch of payouts that user can validate
     response = jsonify({"response": "success!"})
     return response
