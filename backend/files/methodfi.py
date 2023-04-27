@@ -1,8 +1,7 @@
 import requests
 import json
 
-
-def main(payment_data, corporation_accounts_information):
+def main(corporate_entity_information,payment_data, corporation_accounts_information):
     # connect to Method API
     ensure_connection()
 
@@ -19,7 +18,6 @@ def main(payment_data, corporation_accounts_information):
 
     return
 
-
 def ensure_connection():
     url = "https://dev.methodfi.com/ping"
 
@@ -34,7 +32,6 @@ def ensure_connection():
     print(response.text)
 
     return
-
 
 def create_corporate_entity(name, dba, ein, address):
     url = "https://production.methodfi.com/entities"
@@ -70,8 +67,6 @@ def create_corporate_entity(name, dba, ein, address):
 
 # Input should be set of pairs:
 # DunkinID : (Routing #, Account #)
-
-
 def connect_corporate_accounts(corporation_accounts_information):
     url = "https://production.methodfi.com/accounts"
     for accountID, accountNumbers in corporation_accounts_information.items():

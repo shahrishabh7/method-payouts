@@ -15,27 +15,33 @@ def parse(base64_str):
     # Parse the XML string
     root = ET.fromstring(decoded_string)
 
-    # Print the root element
+    # Convert root to string
     root_as_string = ET.tostring(root, encoding='utf8').decode('utf8')
     # print(root_as_string)
 
     # extract payor / payee info to build entities
-    data, corporate_accounts = convert_to_table(root)
+    corporate_entity_information, data, corporate_accounts = convert_to_table(root)
 
-    return data, corporate_accounts
+    return corporate_entity_information, data, corporate_accounts
 
 def convert_to_table(root):
-    # data = {}
-    # for child in root:
-    #     print(child[0][0].text)
-    #     break
-    #     # data[child.tag] = child.text
-
     data = []
     corporate_accounts = defaultdict()
+    corporate_entity_information = {}
+    haveCorporateInformation = False
     for transaction in root.findall('row'):
+        if not haveCorporateInformation:
+            corporate_entity_information["Name"] = transaction[1][3].text
+            corporate_entity_information["DBA"] = transaction[1][4].text
+            corporate_entity_information["EIN"] = transaction[1][5].text
+            corporate_entity_information["Address Line 1"] = transaction[1][6][0].text
+            corporate_entity_information["City"] = transaction[1][6][1].text
+            corporate_entity_information["State"] = transaction[1][6][2].text
+            corporate_entity_information["Zip"] = transaction[1][6][3].text
+            haveCorporateInformation = True
 
         row = {}
+
         # Employee / Payee rows
         row['E: Dunkin ID'] = transaction[0][0].text
         row['E: Dunkin Branch'] = transaction[0][1].text
@@ -65,4 +71,4 @@ def convert_to_table(root):
     sorted_df = df.sort_values(by=['E: Dunkin ID'])
     sorted_df.to_csv('method_data.csv', index=False)
 
-    return data, corporate_accounts
+    return corporate_entity_information, data, corporate_accounts
