@@ -20,15 +20,16 @@ def parse(base64_str):
     # print(root_as_string)
 
     # extract payor / payee info to build entities
-    corporate_entity_information, data, corporate_accounts = convert_to_table(root)
+    individual_entity_information, corporate_entity_information, data, corporate_accounts = convert_to_table(root)
 
-    return corporate_entity_information, data, corporate_accounts
+    return individual_entity_information, corporate_entity_information, data, corporate_accounts
 
 def convert_to_table(root):
     data = []
     corporate_accounts = defaultdict()
     corporate_entity_information = {}
     haveCorporateInformation = False
+    
     for transaction in root.findall('row'):
         if not haveCorporateInformation:
             corporate_entity_information["Name"] = transaction[1][3].text
@@ -66,9 +67,30 @@ def convert_to_table(root):
         row['Amount'] = transaction[3].text
         data.append(row)
 
-    # convert data to viewable dataframe
+    individual_entity_information = filter_individual_entities(data)
+
+    # convert data to viewable dataframe for testing purposes
     df = pd.DataFrame(data)
     sorted_df = df.sort_values(by=['E: Dunkin ID'])
     sorted_df.to_csv('method_data.csv', index=False)
 
-    return corporate_entity_information, data, corporate_accounts
+    return individual_entity_information, corporate_entity_information, data, corporate_accounts
+
+
+def filter_individual_entities(data):
+
+    # Load the original table
+    df = pd.DataFrame(data)
+
+    # Concatenate first name and last name to create a full name column
+    df['Full Name'] = df['E: First Name'] + ' ' + df['E: Last Name']
+
+    # Group the data by full name and apply an aggregate function to select a single record for each group
+    filtered_df = df.groupby('Full Name').first().reset_index()
+
+    # Save the filtered dataframe as a CSV file
+    filtered_df.to_csv('filtered_table.csv', index=False)
+
+    data_dict = df.to_dict('list')
+
+    return data_dict

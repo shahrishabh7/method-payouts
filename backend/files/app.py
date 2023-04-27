@@ -10,9 +10,9 @@ app = Flask(__name__)
 def process_xml():
     xml = request.json['xml']
     # parse XML and retrieve data to create entities
-    corporate_entity_information, payment_data, corporate_accounts = parser.parse(xml['xml'])
+    individual_entity_information, corporate_entity_information, payment_data, corporate_accounts = parser.parse(xml['xml'])
 
-    methodfi.main(corporate_entity_information,payment_data,corporate_accounts)
+    methodfi.main(individual_entity_information, corporate_entity_information,payment_data,corporate_accounts)
 
     # print / return response -> should be batch of payouts that user can validate
     response = jsonify({"response": "success!"})
