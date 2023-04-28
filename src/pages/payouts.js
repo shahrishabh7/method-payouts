@@ -1,12 +1,14 @@
 import { Container } from '@mui/system'
-import { TextField, Button } from '@mui/material'
+import { TextField, Button, Stack } from '@mui/material'
 import { useState, useCallback } from 'react'
 import Dropzone from '../components/dropzone.js'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
+import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box'
 import { Link } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
+import PayoutsPreviewTable from '../components/payouts_preview_table.js'
 
 const button_theme = createTheme({
     status: {
@@ -30,6 +32,7 @@ const button_theme = createTheme({
 
 function Payouts() {
     const [XMLFile, setXMLFile] = useState(null);
+    const [payoutsPreview, setPayoutsPreview] = useState(null);
 
     const onDrop = useCallback(acceptedFiles => {
         const file = acceptedFiles[0];
@@ -40,21 +43,6 @@ function Payouts() {
         };
         reader.readAsDataURL(file);
     }, []);
-    // const [XMLInfo, setXMLInfo] = useState([])
-
-    // const onDrop = useCallback(acceptedFiles => {
-    //     acceptedFiles.map(file => {
-    //         const reader = new FileReader()
-    //         reader.onload = function (e) {
-    //             setXMLInfo(prevState => [
-    //                 ...prevState,
-    //                 { xml: e.target.result }
-    //             ])
-    //         }
-    //         reader.readAsDataURL(file)
-    //         return file
-    //     })
-    // }, [])
 
     const handleSubmit = e => {
         e.preventDefault()
@@ -78,6 +66,7 @@ function Payouts() {
                 if (!data && !data.result) {
                     throw new Error('Response data is not valid')
                 }
+                setPayoutsPreview(data);
             })
             .catch(error => {
                 // Handle any errors that occur during the request
@@ -111,6 +100,18 @@ function Payouts() {
                             Submit
                         </Button>
                     </Link>
+                </div>
+                <div>
+                    {payoutsPreview && (
+                        <>
+                            <Typography variant="h5" sx={{ pb: 5, pt: 5 }}>The payouts set to be staged are shown below. We have displayed individual names with amounts that will be transferred to their respective loan accounts.</Typography>
+                            <Stack direction="row" spacing={2} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 2, pb: 5 }}>
+                                <Button variant="contained">Authorize</Button>
+                                <Button variant="outlined">Discard</Button>
+                            </Stack>
+                            <PayoutsPreviewTable sx={{ marginTop: 20 }} payoutsPreview={payoutsPreview}></PayoutsPreviewTable>
+                        </>
+                    )}
                 </div>
             </header>
         </div>

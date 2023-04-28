@@ -20,7 +20,7 @@ const bar_theme = createTheme({
     },
     palette: {
         primary: {
-            main: '#B38B6D',
+            main: '#828282',
         },
         secondary: {
             main: '#b87333',

@@ -104,10 +104,10 @@ def create_payment_staging_preview(data):
     df['Amount'] = pd.to_numeric(df['Amount'].str.replace('$', '')).round(2)
 
     # Concatenate first name and last name to create a full name column
-    df['Full Name'] = df['E: First Name'] + ' ' + df['E: Last Name']
+    df['Name'] = df['E: First Name'] + ' ' + df['E: Last Name']
 
     # Group the data by full name and apply an aggregate function to select a single record for each group
-    filtered_df = df.groupby('Full Name')['Amount'].sum().reset_index()
+    filtered_df = df.groupby('Name')['Amount'].sum().reset_index()
 
     # Save the filtered dataframe as a CSV file
     filtered_df.to_csv('filtered_table.csv', index=False)
