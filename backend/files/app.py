@@ -28,7 +28,11 @@ def process_xml():
 # hit this endpoint after payment batch is confirmed
 @app.route("/process_payments", methods=["POST"])
 def process_payments():
-    pass
+    data = request.json['paymentsData']
+
+    # parse data and process payments
+    
+
 
 @app.route('/profile', methods=["GET"])
 def my_profile():

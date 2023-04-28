@@ -6,7 +6,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box'
-import { Link } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
 import PayoutsPreviewTable from '../components/payouts_preview_table.js'
 
@@ -47,7 +46,6 @@ function Payouts() {
 
     const handleSubmit = e => {
         e.preventDefault()
-        console.log(XMLFile)
         fetch('/process_xml', {
             method: 'post',
             headers: { 'Content-Type': 'application/json' },
@@ -78,12 +76,11 @@ function Payouts() {
 
     const handleAuthorize = e => {
         e.preventDefault()
-        console.log(XMLFile)
         fetch('/process_payments', {
             method: 'post',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                xml: XMLFile
+                paymentsData: paymentsData
             })
         })
             .then(response => {
@@ -108,6 +105,7 @@ function Payouts() {
     return (
         <div className='App'>
             <header className='App-header'>
+                <Box sx={{pt:6}}></Box>
                 <h1>Payouts</h1>
                 <div className='App'>
                     <p></p>
@@ -120,25 +118,23 @@ function Payouts() {
                     <p></p>
                 </div>
                 <div>
-                    <Link to={'/results'} style={{ textDecoration: 'none' }}>
-                        <Button
-                            variant='outlined'
-                            onClick={handleSubmit}
-                            size='large'
-                            sx={{ border: 1.5 }}
-                            style={{ textTransform: 'none' }}
-                        >
-                            Submit
-                        </Button>
-                    </Link>
+                    <Button
+                        variant='outlined'
+                        onClick={handleSubmit}
+                        size='large'
+                        sx={{ border: 1.5 }}
+                        style={{ textTransform: 'none' }}
+                    >
+                        Submit
+                    </Button>
                 </div>
                 <div>
                     {payoutsPreview && (
                         <>
                             <Typography variant="h5" sx={{ pt: 5 }}>Payouts are staged.</Typography>
-                            <Typography variant="h5" sx={{  pb: 5 }}>Confirm details below to complete payouts.</Typography>
+                            <Typography variant="h5" sx={{ pb: 5 }}>Confirm details below to complete payouts.</Typography>
                             <Stack direction="row" spacing={2} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 2, pb: 5 }}>
-                                <Button variant="contained">Authorize</Button>
+                                <Button variant="contained" onClick={handleAuthorize}>Authorize</Button>
                                 <Button variant="outlined">Discard</Button>
                             </Stack>
                             <PayoutsPreviewTable sx={{ marginTop: 20 }} payoutsPreview={payoutsPreview}></PayoutsPreviewTable>

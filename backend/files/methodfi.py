@@ -18,6 +18,9 @@ def create_entities_and_accounts(individual_entity_information, corporate_entity
     # connect individual accounts
     # connect_individual_accounts(payment_data)
 
+def make_payments():
+    pass
+
 def ensure_connection():
     url = "https://dev.methodfi.com/ping"
 
