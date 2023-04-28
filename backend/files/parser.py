@@ -20,9 +20,9 @@ def parse(base64_str):
     # print(root_as_string)
 
     # extract payor / payee info to build entities
-    individual_entity_information, corporate_entity_information, data, corporate_accounts = convert_to_table(root)
+    payments_preview, individual_entity_information, corporate_entity_information, data, corporate_accounts = convert_to_table(root)
 
-    return individual_entity_information, corporate_entity_information, data, corporate_accounts
+    return payments_preview, individual_entity_information, corporate_entity_information, data, corporate_accounts
 
 def convert_to_table(root):
     data = []
@@ -74,11 +74,12 @@ def convert_to_table(root):
     sorted_df = df.sort_values(by=['E: Dunkin ID'])
     sorted_df.to_csv('method_data.csv', index=False)
 
-    return individual_entity_information, corporate_entity_information, data, corporate_accounts
+    # create payment staging preview
+    payments_preview = create_payment_staging_preview(data)
 
+    return payments_preview, individual_entity_information, corporate_entity_information, data, corporate_accounts
 
 def filter_individual_entities(data):
-
     # Load the original table
     df = pd.DataFrame(data)
 
@@ -89,8 +90,28 @@ def filter_individual_entities(data):
     filtered_df = df.groupby('Full Name').first().reset_index()
 
     # Save the filtered dataframe as a CSV file
-    filtered_df.to_csv('filtered_table.csv', index=False)
+    # filtered_df.to_csv('individual_entities.csv', index=False)
 
     data_dict = df.to_dict('list')
 
+    return data_dict
+
+def create_payment_staging_preview(data):
+    # Load the original table
+    df = pd.DataFrame(data)
+
+    # Convert the 'Amount' column to numeric type
+    df['Amount'] = pd.to_numeric(df['Amount'].str.replace('$', '')).round(2)
+
+    # Concatenate first name and last name to create a full name column
+    df['Full Name'] = df['E: First Name'] + ' ' + df['E: Last Name']
+
+    # Group the data by full name and apply an aggregate function to select a single record for each group
+    filtered_df = df.groupby('Full Name')['Amount'].sum().reset_index()
+
+    # Save the filtered dataframe as a CSV file
+    filtered_df.to_csv('filtered_table.csv', index=False)
+
+    # Convert the filtered dataframe to a dictionary and return it
+    data_dict = filtered_df.to_dict('list')
     return data_dict
