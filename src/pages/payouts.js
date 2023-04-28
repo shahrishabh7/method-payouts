@@ -33,6 +33,7 @@ const button_theme = createTheme({
 function Payouts() {
     const [XMLFile, setXMLFile] = useState(null);
     const [payoutsPreview, setPayoutsPreview] = useState(null);
+    const [paymentsData, setPaymentsData] = useState(null);
 
     const onDrop = useCallback(acceptedFiles => {
         const file = acceptedFiles[0];
@@ -66,7 +67,37 @@ function Payouts() {
                 if (!data && !data.result) {
                     throw new Error('Response data is not valid')
                 }
-                setPayoutsPreview(data);
+                setPayoutsPreview(data['payments_preview']);
+                setPaymentsData(data['payment_data']);
+            })
+            .catch(error => {
+                // Handle any errors that occur during the request
+                console.error(error)
+            })
+    }
+
+    const handleAuthorize = e => {
+        e.preventDefault()
+        console.log(XMLFile)
+        fetch('/process_payments', {
+            method: 'post',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                xml: XMLFile
+            })
+        })
+            .then(response => {
+                console.log('object posted')
+                if (!response.ok) {
+                    throw new Error('Network response was not ok')
+                }
+                return response.json()
+            })
+            .then(data => {
+                console.log('data received', data)
+                if (!data && !data.result) {
+                    throw new Error('Response data is not valid')
+                }
             })
             .catch(error => {
                 // Handle any errors that occur during the request

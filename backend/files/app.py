@@ -19,7 +19,10 @@ def process_xml():
     #     individual_entity_information, corporate_entity_information, payment_data, corporate_accounts)
 
     # print / return response -> should be batch of payouts that user can validate
-    response = jsonify(payments_preview)
+    response = jsonify({
+        'payments_preview':payments_preview,
+        'payment_data':payment_data
+    })
     return response
 
 # hit this endpoint after payment batch is confirmed

@@ -75,7 +75,11 @@ def convert_to_table(root):
     sorted_df.to_csv('method_data.csv', index=False)
 
     # create payment staging preview
-    payments_preview = create_payment_staging_preview(data)
+    payment_table, total_amount = create_payment_staging_preview(data)
+    payments_preview = {
+        'payment_table': payment_table,
+        'total_amount': total_amount
+    }
 
     return payments_preview, individual_entity_information, corporate_entity_information, data, corporate_accounts
 
@@ -101,17 +105,21 @@ def create_payment_staging_preview(data):
     df = pd.DataFrame(data)
 
     # Convert the 'Amount' column to numeric type
-    df['Amount'] = pd.to_numeric(df['Amount'].str.replace('$', '')).round(2)
+    df['Amount'] = pd.to_numeric(df['Amount'].str.replace('$', ''))
 
     # Concatenate first name and last name to create a full name column
     df['Name'] = df['E: First Name'] + ' ' + df['E: Last Name']
 
     # Group the data by full name and apply an aggregate function to select a single record for each group
-    filtered_df = df.groupby('Name')['Amount'].sum().reset_index()
+    filtered_df = df.groupby('Name')['Amount'].sum().reset_index().round(2)
 
     # Save the filtered dataframe as a CSV file
     filtered_df.to_csv('filtered_table.csv', index=False)
 
     # Convert the filtered dataframe to a dictionary and return it
     data_dict = filtered_df.to_dict('list')
-    return data_dict
+
+    # Retrieve total amount to pay out
+    total_amount = filtered_df['Amount'].sum().round(2)
+
+    return data_dict, total_amount
