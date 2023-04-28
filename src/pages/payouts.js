@@ -104,7 +104,8 @@ function Payouts() {
                 <div>
                     {payoutsPreview && (
                         <>
-                            <Typography variant="h5" sx={{ pb: 5, pt: 5 }}>The payouts set to be staged are shown below. We have displayed individual names with amounts that will be transferred to their respective loan accounts.</Typography>
+                            <Typography variant="h5" sx={{ pt: 5 }}>Payouts are staged.</Typography>
+                            <Typography variant="h5" sx={{  pb: 5 }}>Confirm details below to complete payouts.</Typography>
                             <Stack direction="row" spacing={2} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 2, pb: 5 }}>
                                 <Button variant="contained">Authorize</Button>
                                 <Button variant="outlined">Discard</Button>
