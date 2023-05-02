@@ -2,6 +2,8 @@ import requests
 import json
 from datetime import datetime
 from threading import Thread
+import pandas as pd
+from collections import defaultdict
 
 def create_entities_and_accounts(individual_entity_information, corporate_entity_information, payment_data, corporation_accounts_information):
 
@@ -9,16 +11,18 @@ def create_entities_and_accounts(individual_entity_information, corporate_entity
     ensure_connection()
 
     # create corporate entity
-    entity_id = create_corporate_entity(corporate_entity_information)
+    # entity_id = create_corporate_entity(corporate_entity_information)
 
     # connect 5 corporate source accounts
-    connect_corporate_accounts(corporation_accounts_information,entity_id)
+    # connect_corporate_accounts(corporation_accounts_information,entity_id)
 
     # create individual entities
-    # create_individual_entities(individual_entity_information)
-
+    # individual_entity_dict = create_individual_entities(individual_entity_information)
+    individual_entity_dict = {}
     # connect individual accounts
-    # connect_individual_accounts(payment_data)
+    # get dataframe of holderID, merchantID, and account #
+    individual_acccounts_df = get_individual_account_dataframe(payment_data,individual_entity_dict)
+    connect_individual_accounts(individual_acccounts_df)
     pass
 
 def make_payments():
@@ -79,13 +83,10 @@ def create_corporate_entity(corporate_entity_information):
     return response['data']['id']
 
 # Input should be set of pairs:
-# DunkinID : (Routing #, Account #)ß
+# DunkinID : (Routing #, Account #)
 def connect_corporate_accounts(corporation_accounts_information,entity_id):
-    print(corporation_accounts_information)
     url = "https://dev.methodfi.com/accounts"
     for accountID, accountNumbers in corporation_accounts_information.items():
-        # print('connect_corporate_accounts')
-        # print(accountNumbers[0])
         payload = json.dumps({
             "holder_id": f"{entity_id}",
             "ach": {
@@ -101,12 +102,13 @@ def connect_corporate_accounts(corporation_accounts_information,entity_id):
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-        # print(response.text)
+        print(response.text)
 
     return
 
 # create individual entities using multithreading to run 30 threads at once
 def create_individual_entities(individual_entity_information):
+    individual_entity_dict = dict()
     url = "https://dev.methodfi.com/entities"
     column_names = list(individual_entity_information.keys())
     threads = []  # create a list to store the threads
@@ -129,7 +131,11 @@ def create_individual_entities(individual_entity_information):
             'Cookie': '__cf_bm=UOHWXnJcTzM2pgRwySFP4d3T9px_2HhHDLfbyRBS8eU-1682633226-0-Ad+znSLg72DuvBzYBH7N0O74DRLQXRt1tlps/HrqWClLUcV5G/rtngWtBVOIs+g0D/2nMZOMFreGDGEg2CYLJy4='
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        print(response.text)
+        response = response.json()
+        print(response)
+
+        full_name = individual_entity_information['E: First Name'][i] + ' ' + individual_entity_information['E: Last Name'][i]
+        individual_entity_dict[full_name] = response["data"]["id"]
 
     for i in range(len(individual_entity_information[column_names[0]])):
         print(i)
@@ -148,7 +154,53 @@ def create_individual_entities(individual_entity_information):
     for t in threads:
         t.join()
 
+    return individual_entity_dict
+
+def connect_individual_accounts(payment_data):
+    pass
+
+def get_individual_account_dataframe(payment_data,individual_entity_dict):
+    merchants = get_merchants()
+    merchant_id_dict = defaultdict(int)
+    for merchant in merchants:
+        plaid_ids = merchant["provider_ids"]["plaid"]
+        for id in plaid_ids:
+            merchant_id_dict[id] = merchant["mch_id"]
+
+    print(merchant_id_dict)
+    # Info needed in df
+    # id of entity that owns account
+    # merchant_id
+    # loan_account_number
+
+    payment_df = pd.DataFrame(payment_data)
+    filtered_df = payment_df[['E: First Name', 'E: Last Name', 'E: Payee Plaid Id', 'E: Payee Loan Account #']].copy()
+    filtered_df['Full Name'] = filtered_df['E: First Name'] + ' ' + filtered_df['E: Last Name']
+
+    index_length = len(filtered_df.index)
+    merchant_ids = [''] * index_length
+    filtered_df['Merchant ID'] = merchant_ids
+
+    for index, row in filtered_df.iterrows():
+        # print(row['E: Payee Plaid Id'])
+        filtered_df['Merchant ID'] = merchant_id_dict[row['E: Payee Plaid Id']]
+
+    filtered_df.to_csv('payment_df.csv', index=False)
     return
+
+def get_merchants():
+    url = "https://dev.methodfi.com/merchants"
+
+    payload = {}
+    headers = {
+    'Authorization': 'Bearer: sk_UL6hLcNqpATBaAJbygfBHFUP',
+    'Cookie': '__cf_bm=Wb8uq3uyo1k6pv8vRkLRiVc47hTI3Htp5VJzAKL_JFc-1683059108-0-ASKRr0G6mpSzWiaRs3ThgD6ON2CG7Lpm2KikEkQX7SVxYd5NFbP4fDLmj7o0veDcwGXD15Jjjuq2uw0Yh4iJv70='
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    # print(response.text)
+    return response.json()["data"]
 
 def convert_date_format(date_string):
     # Convert the string to a datetime object
