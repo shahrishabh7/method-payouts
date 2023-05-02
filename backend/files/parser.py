@@ -56,7 +56,7 @@ def convert_to_table(root):
 
         # Payor rows
         if transaction[1][0].text not in corporate_accounts:
-            corporate_accounts[transaction[1][0].text] = (int(transaction[1][1].text),int(transaction[1][2].text))
+            corporate_accounts[transaction[1][0].text] = (transaction[1][1].text,transaction[1][2].text)
 
         row['Payor: Dunkin ID'] = transaction[1][0].text
         row['Payor: ABARouting'] = transaction[1][1].text
@@ -84,7 +84,6 @@ def convert_to_table(root):
 
     # commit data batch to database
     # add_to_mongo(data)
-
     return payments_preview, individual_entity_information, corporate_entity_information, data, corporate_accounts
 
 def filter_individual_entities(data):

@@ -6,13 +6,13 @@ from threading import Thread
 def create_entities_and_accounts(individual_entity_information, corporate_entity_information, payment_data, corporation_accounts_information):
 
     # ensure connection to Method API
-    # ensure_connection()
+    ensure_connection()
 
     # create corporate entity
-    # entity_id = create_corporate_entity(corporate_entity_information)
+    entity_id = create_corporate_entity(corporate_entity_information)
 
     # connect 5 corporate source accounts
-    # connect_corporate_accounts(corporation_accounts_information,entity_id)
+    connect_corporate_accounts(corporation_accounts_information,entity_id)
 
     # create individual entities
     # create_individual_entities(individual_entity_information)
@@ -81,9 +81,11 @@ def create_corporate_entity(corporate_entity_information):
 # Input should be set of pairs:
 # DunkinID : (Routing #, Account #)ß
 def connect_corporate_accounts(corporation_accounts_information,entity_id):
+    print(corporation_accounts_information)
     url = "https://dev.methodfi.com/accounts"
     for accountID, accountNumbers in corporation_accounts_information.items():
-        print('connect_corporate_accounts')
+        # print('connect_corporate_accounts')
+        # print(accountNumbers[0])
         payload = json.dumps({
             "holder_id": f"{entity_id}",
             "ach": {
@@ -99,7 +101,7 @@ def connect_corporate_accounts(corporation_accounts_information,entity_id):
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-        print(response.text)
+        # print(response.text)
 
     return
 
