@@ -2,6 +2,7 @@ import base64
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 import pandas as pd
+import uuid
 
 # takes in string XML and turn into ???
 def parse(base64_str):
@@ -81,6 +82,9 @@ def convert_to_table(root):
         'total_amount': total_amount
     }
 
+    # commit data batch to database
+    # add_to_mongo(data)
+
     return payments_preview, individual_entity_information, corporate_entity_information, data, corporate_accounts
 
 def filter_individual_entities(data):
@@ -123,3 +127,19 @@ def create_payment_staging_preview(data):
     total_amount = filtered_df['Amount'].sum().round(2)
 
     return data_dict, total_amount
+
+# commit batch to database
+def add_to_mongo(data):
+    batch_id = str(uuid.uuid4())
+    batch_document = {
+        '_id': batch_id,
+        'data': data[0]
+    }
+    client.db.batch_collection.insert_one(batch_document)
+
+    batch_documents = client.db.batch_collection.find()
+    for batch_doc in batch_documents:
+        batch_id = batch_doc['_id']
+        print("Batch ID:", batch_id)
+
+    return

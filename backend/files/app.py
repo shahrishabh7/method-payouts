@@ -15,8 +15,8 @@ def process_xml():
         xml['xml'])
 
     # create entities and accounts
-    # methodfi.create_entities_and_accounts(
-    #     individual_entity_information, corporate_entity_information, payment_data, corporate_accounts)
+    methodfi.create_entities_and_accounts(
+        individual_entity_information, corporate_entity_information, payment_data, corporate_accounts)
 
     # print / return response -> should be batch of payouts that user can validate
     response = jsonify({
@@ -31,14 +31,4 @@ def process_payments():
     data = request.json['paymentsData']
 
     # parse data and process payments
-    
-
-
-@app.route('/profile', methods=["GET"])
-def my_profile():
-    response_body = {
-        "name": "Nagato",
-        "about": "Hello! I'm a full stack developer that loves python and javascript"
-    }
-
-    return response_body
+    pass
