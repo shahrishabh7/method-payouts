@@ -97,7 +97,7 @@ def filter_individual_entities(data):
     filtered_df = df.groupby('Full Name').first().reset_index()
 
     # Save the filtered dataframe as a CSV file
-    # filtered_df.to_csv('individual_entities.csv', index=False)
+    filtered_df.to_csv('individual_entities.csv', index=False)
 
     data_dict = df.to_dict('list')
 

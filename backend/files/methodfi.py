@@ -11,23 +11,40 @@ def create_entities_and_accounts(individual_entity_information, corporate_entity
     ensure_connection()
 
     # create corporate entity
-    # entity_id = create_corporate_entity(corporate_entity_information)
+    entity_id = create_corporate_entity(corporate_entity_information)
 
     # connect 5 corporate source accounts
-    # connect_corporate_accounts(corporation_accounts_information,entity_id)
+    connect_corporate_accounts(corporation_accounts_information,entity_id)
 
     # create individual entities
-    # individual_entity_dict = create_individual_entities(individual_entity_information)
-    individual_entity_dict = {}
+    individual_entity_dict = create_individual_entities(individual_entity_information)
+
     # connect individual accounts
     # get dataframe of holderID, merchantID, and account #
     individual_acccounts_df = get_individual_account_dataframe(payment_data,individual_entity_dict)
     connect_individual_accounts(individual_acccounts_df)
-    pass
 
-def make_payments():
-    pass
+def make_payments(payment_data):
+    url = "https://dev.methodfi.com/payments"
 
+    for payment in payment_data:
+        payload = json.dumps({
+        "amount": 5000,
+        "source": f"{payment['source']}",
+        "destination": f"{payment['destination']}",
+        "description": "Loan Pmt"
+        })
+        headers = {
+        'Authorization': 'Bearer sk_UL6hLcNqpATBaAJbygfBHFUP',
+        'Content-Type': 'application/json',
+        'Cookie': '__cf_bm=DNoZXPwpdoL0rCn_ofOdYFdlGU1Gq.zM4sEkW5pnZEc-1683141038-0-AUJC1sAOCUgmkkXEogyu6uZ/jM9c8zRbbgPmlPW2MkrKiRshWnlDOUlT7VCH4TnjE42pXBD3jViTfJreYneDpYg='
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        print(response.text)
+
+    return
+        
 def ensure_connection():
     url = "https://dev.methodfi.com/ping"
 
